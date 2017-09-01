@@ -1,6 +1,5 @@
-[![CircleCI](https://circleci.com/gh/amfleming/skeleton.svg?style=svg)](https://circleci.com/gh/amfleming/skeleton)
+[![CircleCI](https://circleci.com/gh/techlover10/5356-api.svg?style=svg)](https://circleci.com/gh/techlover10/5356-api)
 
-
-skeleton
+CS 5356: Startup Systems A2
 ============
-A super simple foundation for building a scalable RESTful HTTP servers
+Based off of the code available in this [skeleton](https://github.com/amfleming/skeleton)
