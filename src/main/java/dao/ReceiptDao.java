@@ -10,6 +10,7 @@ import org.jooq.impl.DSL;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
 
 import static com.google.common.base.Preconditions.checkState;
 import static generated.Tables.RECEIPTS;
@@ -23,8 +24,8 @@ public class ReceiptDao {
 
     public int insert(String merchantName, BigDecimal amount) {
         ReceiptsRecord receiptsRecord = dsl
-                .insertInto(RECEIPTS, RECEIPTS.MERCHANT, RECEIPTS.AMOUNT)
-                .values(merchantName, amount)
+                .insertInto(RECEIPTS, RECEIPTS.MERCHANT, RECEIPTS.AMOUNT, RECEIPTS.TAGS)
+                .values(merchantName, amount, "")
                 .returning(RECEIPTS.ID)
                 .fetchOne();
 
@@ -44,21 +45,17 @@ public class ReceiptDao {
 
     }
 
-    public boolean containsTag(String tagString, String tag){
-        List<String> tagSet = Arrays.asList(tagString.split(";"));
-        return tagSet.contains(tag);
-    }
-
     public boolean containsTag(int rid, String tag){
         ReceiptsRecord r = getRecord(rid);
         String tagString = r.getTags();
-        List<String> tagSet = Arrays.asList(tagString.split(";"));
+        ArrayList<String> tagSet = new ArrayList<>(Arrays.asList(tagString.split(" ")));
         return tagSet.contains(tag);
     }
 
     public void toggleTag(int rid, String tag){
         if (containsTag(rid, tag)){
             removeTag(rid, tag);
+            return;
         }
         addTag(rid, tag);
 
@@ -67,8 +64,9 @@ public class ReceiptDao {
 
     private void addTag (int rid, String newTag){
         String prevString = getRecord(rid).getTags();
-        if (prevString != ""){
-            updateTags(rid, prevString + ';' + newTag);
+        if (!prevString.equals("")){
+            updateTags(rid, prevString + ' ' + newTag);
+            return;
         }
         updateTags(rid, newTag);
 
@@ -76,11 +74,11 @@ public class ReceiptDao {
 
     private void removeTag (int rid, String oldTag){
         String prevString = getRecord(rid).getTags();
-        List<String> tagSet = Arrays.asList(prevString.split(";"));
+        ArrayList<String> tagSet = new ArrayList<>(Arrays.asList(prevString.split(" ")));
         tagSet.remove(oldTag);
         String tagList = "";
         for (int i = 0; i < tagSet.size()-1; i++){
-            tagList += tagSet.get(i) + ";";
+            tagList += tagSet.get(i) + " ";
         }
         if (tagSet.size() > 0){
            tagList += tagSet.get(tagSet.size() - 1);
@@ -92,9 +90,14 @@ public class ReceiptDao {
 
     private void updateTags (int rid, String newString){
         // Update the tag with the new tag
+        //System.out.println("before");
+        //System.out.println(getRecord(rid).toString());
         dsl.update(RECEIPTS)
                 .set(RECEIPTS.TAGS, newString)
+                .where(RECEIPTS.ID.equal(rid))
                 .execute();
+        //System.out.println("after");
+        //System.out.println(getRecord(rid).toString());
 
     }
 
@@ -104,13 +107,6 @@ public class ReceiptDao {
     }
 
     public List<ReceiptsRecord> getByTag(String tag){
-        List<ReceiptsRecord> receipts = getAllReceipts();
-        for (int i = 0; i < getAllReceipts().size(); i++){
-            ReceiptsRecord currReceipt = receipts.get(i);
-            if(containsTag(currReceipt.getTags(), tag)){
-              receipts.remove(currReceipt);
-            }
-        }
-        return receipts;
+        return dsl.selectFrom(RECEIPTS).where(RECEIPTS.TAGS.contains(tag)).fetch();
     }
 }
