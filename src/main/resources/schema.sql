@@ -4,6 +4,7 @@ CREATE TABLE receipts (
   merchant VARCHAR(255),
   amount DECIMAL(12,2),
   receipt_type INT UNSIGNED,
+  tags TEXT,
 
   PRIMARY KEY (id)
 );
