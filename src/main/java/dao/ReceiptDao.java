@@ -45,35 +45,35 @@ public class ReceiptDao {
 
     }
 
-    public boolean containsTag(int rid, String tag){
-        ReceiptsRecord r = getRecord(rid);
+    private boolean containsTag(ReceiptsRecord r, String tag){
         String tagString = r.getTags();
         ArrayList<String> tagSet = new ArrayList<>(Arrays.asList(tagString.split(" ")));
         return tagSet.contains(tag);
     }
 
     public void toggleTag(int rid, String tag){
-        if (containsTag(rid, tag)){
-            removeTag(rid, tag);
+        ReceiptsRecord r = getRecord(rid);
+        if (containsTag(r, tag)){
+            removeTag(r, tag);
             return;
         }
-        addTag(rid, tag);
+        addTag(r, tag);
 
 
     }
 
-    private void addTag (int rid, String newTag){
-        String prevString = getRecord(rid).getTags();
+    private void addTag (ReceiptsRecord r, String newTag){
+        String prevString = r.getTags();
         if (!prevString.equals("")){
-            updateTags(rid, prevString + ' ' + newTag);
+            updateTags(r, prevString + ' ' + newTag);
             return;
         }
-        updateTags(rid, newTag);
+        updateTags(r, newTag);
 
     }
 
-    private void removeTag (int rid, String oldTag){
-        String prevString = getRecord(rid).getTags();
+    private void removeTag (ReceiptsRecord r, String oldTag){
+        String prevString = r.getTags();
         ArrayList<String> tagSet = new ArrayList<>(Arrays.asList(prevString.split(" ")));
         tagSet.remove(oldTag);
         String tagList = "";
@@ -84,20 +84,17 @@ public class ReceiptDao {
            tagList += tagSet.get(tagSet.size() - 1);
         }
 
-        updateTags(rid, tagList);
+        updateTags(r, tagList);
 
     }
 
-    private void updateTags (int rid, String newString){
+    private void updateTags (ReceiptsRecord r, String newString){
         // Update the tag with the new tag
-        //System.out.println("before");
-        //System.out.println(getRecord(rid).toString());
+        int rid = r.getId();
         dsl.update(RECEIPTS)
                 .set(RECEIPTS.TAGS, newString)
                 .where(RECEIPTS.ID.equal(rid))
                 .execute();
-        //System.out.println("after");
-        //System.out.println(getRecord(rid).toString());
 
     }
 
