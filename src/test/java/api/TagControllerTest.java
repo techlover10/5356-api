@@ -21,18 +21,6 @@ import static org.hamcrest.collection.IsEmptyCollection.empty;
 public class TagControllerTest {
 
     @Test
-    public void testReceiptCreate() {
-        ReceiptDao daoTest = mock(ReceiptDao.class);
-        ReceiptController rTest = new ReceiptController(daoTest);
-        CreateReceiptRequest testRequest = new CreateReceiptRequest();
-        testRequest.amount = BigDecimal.ONE;
-        testRequest.merchant = "testMerchant";
-
-        int testLog = rTest.createReceipt(testRequest);
-
-    }
-
-    @Test
     public void testReceiptAddTag() {
         ReceiptDao daoTest = mock(ReceiptDao.class);
         TagController tTest = new TagController(daoTest);
@@ -43,9 +31,7 @@ public class TagControllerTest {
 
         int testLog = rTest.createReceipt(testRequest);
         tTest.toggleTag("testTag", testLog);
-        List<ReceiptResponse> tagList = tTest.getTag("testTag");
-        List<ReceiptResponse> allList = rTest.getReceipts();
-        assert(allList.equals(tagList));
+        verify(daoTest).toggleTag(testLog,"testTag");
     }
 
     @Test
@@ -60,11 +46,9 @@ public class TagControllerTest {
         int testLog = rTest.createReceipt(testRequest);
         tTest.toggleTag("testTag", testLog);
         tTest.toggleTag("testTag2", testLog);
-        List<ReceiptResponse> tagList = tTest.getTag("testTag");
-        List<ReceiptResponse> tagList2 = tTest.getTag("testTag2");
-        List<ReceiptResponse> allList = rTest.getReceipts();
-        assert(allList.equals(tagList));
-        assert(allList.equals(tagList2));
+
+        verify(daoTest).toggleTag(testLog,"testTag");
+        verify(daoTest).toggleTag(testLog,"testTag2");
     }
 
     @Test
@@ -79,11 +63,7 @@ public class TagControllerTest {
         int testLog = rTest.createReceipt(testRequest);
         tTest.toggleTag("testTag", testLog);
         tTest.toggleTag("testTag2", testLog);
-        List<ReceiptResponse> tagList = tTest.getTag("testTag");
         tTest.toggleTag("testTag2", testLog);
-        List<ReceiptResponse> tagList2 = tTest.getTag("testTag2");
-        List<ReceiptResponse> allList = rTest.getReceipts();
-        assert(allList.equals(tagList));
-        assert(tagList2.isEmpty());
+        verify(daoTest, times(2)).toggleTag(testLog, "testTag2");
     }
 }
