@@ -1,7 +1,3 @@
-# WARNING!  I am on a low-bandwidth internet connection and have not been able to build this
-# image myself yet.  Almost certainly it won't work, but the ideas are right
-
-
 # Use as are base image a linux with the java8 runtime already installed
 FROM openjdk:8
 

@@ -9,10 +9,10 @@ import io.dropwizard.jersey.sessions.Session;
 
 // For a Java class to be eligible to receive ANY requests
 // it must be annotated with at least @Path
-@Path("/")
+@Path("/netid")
 @Produces(MediaType.APPLICATION_JSON)
-public class HelloWorldController {
-    public HelloWorldController() {
+public class NetIDController {
+    public NetIDController() {
     }
 
     // You can specify additional @Path steps; they will be relative
