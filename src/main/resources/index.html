@@ -43,7 +43,9 @@
                             </div>
                             <div style="background-color: lightgreen; border-radius: 5px; padding: 5px; margin-top: 7px">
                                 <form data-bind="visible: addingTag, submit: addTag">
-                                <input type="text" class="tag_input" data-bind="textInput: tagToAdd" style="font-size: 10px; display:inline"></input>
+                                    <!-- ko if: addingTag -->
+                                    <input type="text" class="tag_input" data-bind="textInput: tagToAdd" style="font-size: 10px; display:inline"></input>
+                                    <!-- /ko -->
                                 </form>
                                 <button class="pure-button pure-button-primary add-tag" data-bind="click: toggleAddTag, visible: addingTagButton" style="display:inline;margin: 0px 0 0 4px; padding: 0 4px 0 4px; background-color: green">Add +</button>
                             </div>
