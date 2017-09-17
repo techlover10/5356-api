@@ -28,23 +28,24 @@
                         <th style="text-align: center">Tags</th>
                     </tr>
                 </thead>
-                <tbody class="receipt" data-bind="foreach: receiptsArr">
-                    <tr style="border-bottom: 1px solid lightgrey">
+                <tbody data-bind="foreach: receiptsArr">
+                    <tr class="receipt" style="border-bottom: 1px solid lightgrey">
                         <td data-bind="text: time"></td>
                         <td class="merchant" data-bind="text: merchant"></td>
                         <td class="amount" data-bind="text: amount"></td>
                         <td class="tags">
                             <div data-bind="foreach: tags">
                                 <div style="background-color: lightgreen; border-radius: 5px; padding: 5px 0 5px 0; margin-top: 5px">
-                                    <p style="display:inline" data-bind="text: tagID"></p>
-                                    <button class="pure-button pure-button-primary" style="display:inline;margin: 0px 0 0 4px; padding: 0 4px 0 4px; background-color: darkred" data-bind="click: removeTag">x</button>
+                                    <p class="tagValue" style="display:inline" data-bind="text: tagIDdisp, click: removeTag"></p>
+                                    <!--
+                                    <button class="pure-button pure-button-primary" style="display:inline;margin: 0px 0 0 4px; padding: 0 4px 0 4px; background-color: darkred" data-bind="click: removeTag">x</button> -->
                                 </div>
                             </div>
                             <div style="background-color: lightgreen; border-radius: 5px; padding: 5px; margin-top: 7px">
                                 <form data-bind="visible: addingTag, submit: addTag">
-                                <input type="text" data-bind="textInput: tagToAdd" style="font-size: 10px; display:inline"></input>
+                                <input type="text" class="tag_input" data-bind="textInput: tagToAdd" style="font-size: 10px; display:inline"></input>
                                 </form>
-                                <button class="pure-button pure-button-primary" data-bind="click: toggleAddTag, visible: addingTagButton" style="display:inline;margin: 0px 0 0 4px; padding: 0 4px 0 4px; background-color: green">Add +</button>
+                                <button class="pure-button pure-button-primary add-tag" data-bind="click: toggleAddTag, visible: addingTagButton" style="display:inline;margin: 0px 0 0 4px; padding: 0 4px 0 4px; background-color: green">Add +</button>
                             </div>
 
                         </td>
@@ -62,6 +63,7 @@ function createReceiptObject (id, t, m, a, tag){
     self.createTagObject = function(tag){
         return {
             tagID: tag,
+            tagIDdisp: tag + '  X',
             removeTag: function () {
                 self.removeTag(tag);
             }
@@ -155,7 +157,6 @@ function ReceiptsModel () {
                 obj = new createReceiptObject(dataArr[0],dataArr[1], currMerchant, currAmount, "");
                 self.receiptsArr.push(obj);
                 self.clearReceiptInput();
-                self.toggleAddReceipt();
             },
             error: function (data){
                 console.log(data);
