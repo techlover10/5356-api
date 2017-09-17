@@ -1,22 +1,14 @@
 package api;
 
 
-import com.sun.org.apache.regexp.internal.RE;
 import controllers.ReceiptController;
 import controllers.TagController;
 import dao.ReceiptDao;
-import generated.tables.records.ReceiptsRecord;
-import io.dropwizard.jersey.validation.Validators;
 import org.junit.Test;
 import static org.mockito.Mockito.*;
 
-import javax.validation.Validator;
 import java.math.BigDecimal;
-import java.util.List;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.collection.IsEmptyCollection.empty;
 
 public class TagControllerTest {
 
@@ -29,7 +21,8 @@ public class TagControllerTest {
         testRequest.amount = BigDecimal.ONE;
         testRequest.merchant = "testMerchant";
 
-        int testLog = rTest.createReceipt(testRequest);
+        String testLogRaw = rTest.createReceipt(testRequest).split(";")[0];
+        int testLog = Integer.parseInt(testLogRaw);
         tTest.toggleTag("testTag", testLog);
         verify(daoTest).toggleTag(testLog,"testTag");
     }
@@ -43,7 +36,8 @@ public class TagControllerTest {
         testRequest.amount = BigDecimal.ONE;
         testRequest.merchant = "testMerchant";
 
-        int testLog = rTest.createReceipt(testRequest);
+        String testLogRaw = rTest.createReceipt(testRequest).split(";")[0];
+        int testLog = Integer.parseInt(testLogRaw);
         tTest.toggleTag("testTag", testLog);
         tTest.toggleTag("testTag2", testLog);
 
@@ -60,7 +54,8 @@ public class TagControllerTest {
         testRequest.amount = BigDecimal.ONE;
         testRequest.merchant = "testMerchant";
 
-        int testLog = rTest.createReceipt(testRequest);
+        String testLogRaw = rTest.createReceipt(testRequest).split(";")[0];
+        int testLog = Integer.parseInt(testLogRaw);
         tTest.toggleTag("testTag", testLog);
         tTest.toggleTag("testTag2", testLog);
         tTest.toggleTag("testTag2", testLog);

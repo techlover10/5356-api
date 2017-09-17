@@ -26,7 +26,13 @@ public class ReceiptController {
     @POST
     public String createReceipt(@Valid @NotNull CreateReceiptRequest receipt) {
         int rid = receipts.insert(receipt.merchant, receipt.amount);
-        String time = receipts.getRecord(rid).getUploaded().toString();
+        ReceiptsRecord r = receipts.getRecord(rid);
+        String time;
+        if (r != null) {
+            time = receipts.getRecord(rid).getUploaded().toString();
+        } else {
+            time = "0";
+        }
         return rid + ";" + time;
 
     }
