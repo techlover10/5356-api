@@ -11,7 +11,7 @@
         <div style="text-align: center; padding: auto; vertical-align: middle">
             <h1> Receipts Database </h1>
             <h2> My Receipts </h2>
-            <button class="pure-button pure-button-primary add-receipt" style="background-color:green" data-bind="click: toggleAddReceipt">+</button>
+            <button class="pure-button pure-button-primary" id="add-receipt" style="background-color:green" data-bind="click: toggleAddReceipt">+</button>
             <div class="pure-form-stacked" data-bind="visible: addReceiptVisible" style="border: 3px solid green;padding:15px; border-radius:10px; margin: -1px auto auto auto; width: 30%;">
                 <input id="merchant" type="text" style="width: 100%" data-bind="textInput: inputMerchant"placeholder="Merchant">
                 <input id="amount" type="text" style="width: 100%" data-bind="textInput: inputAmount"placeholder="Amount">
