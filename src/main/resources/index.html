@@ -18,7 +18,7 @@
                 <button class="pure-button pure-button-primary" id="cancel-receipt" data-bind="click: clearReceiptInput" style="background-color: red">Cancel</button>
                 <button class="pure-button pure-button-primary" id="save-receipt" data-bind="click: addReceipt">Add</button>
             </div>
-            <div id="receiptList">
+            <div>
             <table class="pure-table" style="margin: auto; margin-top:10px">
                 <thead>
                     <tr>
@@ -28,7 +28,7 @@
                         <th style="text-align: center">Tags</th>
                     </tr>
                 </thead>
-                <tbody data-bind="foreach: receiptsArr">
+                <tbody id="receiptList" data-bind="foreach: receiptsArr">
                     <tr class="receipt" style="border-bottom: 1px solid lightgrey">
                         <td data-bind="text: time"></td>
                         <td class="merchant" data-bind="text: merchant"></td>
