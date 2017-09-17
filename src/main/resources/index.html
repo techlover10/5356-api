@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Receipts Database</title>
+        <script src="http://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"></script>
+        <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
+    </head>
+    <body style="padding-left:10%; padding-top: 10px; padding-right: 10%">
+        <div style="text-align: center; padding: auto; vertical-align: middle">
+            <h1> Receipts Database </h1>
+            <h2> My Receipts </h2>
+            <button class="pure-button pure-button-primary add-receipt" style="background-color:green" data-bind="click: toggleAddReceipt">+</button>
+            <div class="pure-form-stacked" data-bind="visible: addReceiptVisible" style="border: 3px solid green;padding:15px; border-radius:10px; margin: -1px auto auto auto; width: 30%;">
+                <input id="merchant" type="text" style="width: 100%" data-bind="textInput: inputMerchant"placeholder="Merchant">
+                <input id="amount" type="text" style="width: 100%" data-bind="textInput: inputAmount"placeholder="Amount">
+                <button class="pure-button pure-button-primary" id="cancel-receipt" data-bind="click: clearReceiptInput" style="background-color: red">Cancel</button>
+                <button class="pure-button pure-button-primary" id="save-receipt" data-bind="click: addReceipt">Add</button>
+            </div>
+            <div id="receiptList">
+            <table class="pure-table" style="margin: auto; margin-top:10px">
+                <thead>
+                    <tr>
+                        <th style="text-align: center">Time</th>
+                        <th style="text-align: center">Merchant</th>
+                        <th style="text-align: center">Amount</th>
+                        <th style="text-align: center">Tags</th>
+                    </tr>
+                </thead>
+                <tbody class="receipt" data-bind="foreach: receiptsArr">
+                    <tr style="border-bottom: 1px solid lightgrey">
+                        <td data-bind="text: time"></td>
+                        <td class="merchant" data-bind="text: merchant"></td>
+                        <td class="amount" data-bind="text: amount"></td>
+                        <td class="tags">
+                            <div data-bind="foreach: tags">
+                                <div style="background-color: lightgreen; border-radius: 5px; padding: 5px 0 5px 0; margin-top: 5px">
+                                    <p style="display:inline" data-bind="text: tagID"></p>
+                                    <button class="pure-button pure-button-primary" style="display:inline;margin: 0px 0 0 4px; padding: 0 4px 0 4px; background-color: darkred" data-bind="click: removeTag">x</button>
+                                </div>
+                            </div>
+                            <div style="background-color: lightgreen; border-radius: 5px; padding: 5px; margin-top: 7px">
+                                <form data-bind="visible: addingTag, submit: addTag">
+                                <input type="text" data-bind="textInput: tagToAdd" style="font-size: 10px; display:inline"></input>
+                                </form>
+                                <button class="pure-button pure-button-primary" data-bind="click: toggleAddTag, visible: addingTagButton" style="display:inline;margin: 0px 0 0 4px; padding: 0 4px 0 4px; background-color: green">Add +</button>
+                            </div>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </body>
+    <script type="text/javascript">
+function createReceiptObject (id, t, m, a, tag){
+    var self = this;
+    
+    // Create a tag object
+    self.createTagObject = function(tag){
+        return {
+            tagID: tag,
+            removeTag: function () {
+                self.removeTag(tag);
+            }
+        }
+    };
+
+    // generate the initial tag set
+    tagsArr = tag.split(' ');
+    self.tags = ko.observableArray([]);
+    for (i = 0; i < tagsArr.length; i++){
+        if (tagsArr[i].length > 0) {
+            self.tags.push(new self.createTagObject(tagsArr[i]));
+        }
+    }
+    self.id = id;
+    self.merchant= m;
+    self.amount= a;
+    self.time = t;
+    self.tagToAdd= ko.observable("");
+    self.addingTag= ko.observable(false);
+    self.addingTagButton= ko.observable(true);
+    self.toggleAddTag = function (){
+        self.addingTag(true);
+        self.addingTagButton(false);
+    };
+    self.removeTag = function(tag){
+        $.post('/tags/' + currTag, self.id)
+            .done(function(){
+                self.tags.remove( function (item) { return (item.tagID == tag) });
+            })
+            .fail(function(){
+                alert("failed to remove tag");
+            });
+
+        //TODO: actually remove the tag
+    };
+    self.addTag = function(){
+        if (self.tagToAdd().length > 0){
+            var currTag = self.tagToAdd();
+            $.post('/tags/' + currTag, self.id)
+                .done( function (){
+                    self.tags.push(new self.createTagObject(self.tagToAdd()));
+                    self.tagToAdd("");
+                })
+                .fail( function (){
+                    alert("failed to add tag");
+                });
+        }
+        self.addingTag(false);
+        self.addingTagButton(true);
+    };
+}
+function ReceiptsModel () {
+    // Observables for time, merchant, amount inputs
+    self.inputMerchant = ko.observable("");
+    self.inputAmount = ko.observable("");
+
+    // Handle toggling of add receiipts panel
+    self.addReceiptVisible=ko.observable(false);
+    self.toggleAddReceipt= function() {
+        console.log("toggling");
+        self.addReceiptVisible(!self.addReceiptVisible());
+    };
+
+    // Array of receipts
+    self.receiptsArr = ko.observableArray([]);
+
+    // Add a receipt to the array
+    self.addReceipt = function(){
+        var d = new Date().toString();
+        var currMerchant = self.inputMerchant();
+        var currAmount = self.inputAmount();
+
+        $.post("/receipts", {time: d, merchant: currMerchant, amount: currAmount})
+            .done( function(){
+                obj = new createReceiptObject(id, d, currMerchant, currAmount, "");
+                self.receiptsArr.push(obj);
+                self.clearReceiptInput();
+                self.toggleAddReceipt();
+            })
+            .fail( function (){
+                alert("Error: Failed to add receipt.  Check parameters and try again.");
+            });
+    };
+
+    // Clear the receipt input panel
+    self.clearReceiptInput = function(){
+        self.inputTime("");
+        self.inputMerchant("");
+        self.inputAmount("");
+        self.toggleAddReceipt();
+    };
+
+    // ---- ADD DEMO DATA ----
+    //obj = new createReceiptObject(1, 1,2,3,"4 5 56");
+    //obj2 = new createReceiptObject(2, 2,2,3,"4 5 56");
+    //self.receiptsArr.push(obj);
+    //self.receiptsArr.push(obj2);
+
+    // ---- END DEMO DATA ----- 
+
+    // --- CURL to preload receipts ---
+    $.get('/receipts', function (data){
+        for (i = 0; i < len(data); i++){
+            self.receiptsArr.push(new createReceiptObject(data[i].id, data[i].time, data[i].merchant, data[i].amount, data[i].tags));
+        }
+        console.log("receipts loaded");
+    });
+
+
+}
+
+ko.applyBindings(new ReceiptsModel());
+    </script>
+</html>
