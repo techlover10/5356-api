@@ -24,8 +24,11 @@ public class ReceiptController {
     }
 
     @POST
-    public int createReceipt(@Valid @NotNull CreateReceiptRequest receipt) {
-        return receipts.insert(receipt.merchant, receipt.amount);
+    public String createReceipt(@Valid @NotNull CreateReceiptRequest receipt) {
+        int rid = receipts.insert(receipt.merchant, receipt.amount);
+        String time = receipts.getRecord(rid).getUploaded().toString();
+        return rid + ";" + time;
+
     }
 
     @GET

@@ -88,27 +88,37 @@ function createReceiptObject (id, t, m, a, tag){
         self.addingTagButton(false);
     };
     self.removeTag = function(tag){
-        $.post('/tags/' + currTag, self.id)
-            .done(function(){
+        $.ajax({
+            type: 'PUT',
+            url: '/tags/' + tag,
+            data: self.id.toString(),
+            contentType: "application/json",
+            success: function(){
                 self.tags.remove( function (item) { return (item.tagID == tag) });
-            })
-            .fail(function(){
+            },
+            error: function(){
                 alert("failed to remove tag");
-            });
+            }
+        });
 
-        //TODO: actually remove the tag
     };
     self.addTag = function(){
         if (self.tagToAdd().length > 0){
             var currTag = self.tagToAdd();
-            $.post('/tags/' + currTag, self.id)
-                .done( function (){
+            $.ajax({
+                type: 'PUT',
+                url: '/tags/' + currTag,
+                data: self.id.toString(),
+                contentType: "application/json",
+                success: function (){
                     self.tags.push(new self.createTagObject(self.tagToAdd()));
                     self.tagToAdd("");
-                })
-                .fail( function (){
+                },
+                error: function (data){
+                    console.log(data);
                     alert("failed to add tag");
-                });
+                }
+            });
         }
         self.addingTag(false);
         self.addingTagButton(true);
@@ -131,25 +141,31 @@ function ReceiptsModel () {
 
     // Add a receipt to the array
     self.addReceipt = function(){
-        var d = new Date().toString();
         var currMerchant = self.inputMerchant();
         var currAmount = self.inputAmount();
 
-        $.post("/receipts", {time: d, merchant: currMerchant, amount: currAmount})
-            .done( function(){
-                obj = new createReceiptObject(id, d, currMerchant, currAmount, "");
+        $.ajax({
+            type: "POST", 
+            url: "/receipts", 
+            data: JSON.stringify({"merchant": currMerchant, "amount": currAmount}),
+            contentType: "application/json",
+            dataType: "text",
+            success: function(data){
+                dataArr = data.split(';');
+                obj = new createReceiptObject(dataArr[0],dataArr[1], currMerchant, currAmount, "");
                 self.receiptsArr.push(obj);
                 self.clearReceiptInput();
                 self.toggleAddReceipt();
-            })
-            .fail( function (){
+            },
+            error: function (data){
+                console.log(data);
                 alert("Error: Failed to add receipt.  Check parameters and try again.");
-            });
+            }
+        })
     };
 
     // Clear the receipt input panel
     self.clearReceiptInput = function(){
-        self.inputTime("");
         self.inputMerchant("");
         self.inputAmount("");
         self.toggleAddReceipt();
@@ -165,8 +181,8 @@ function ReceiptsModel () {
 
     // --- CURL to preload receipts ---
     $.get('/receipts', function (data){
-        for (i = 0; i < len(data); i++){
-            self.receiptsArr.push(new createReceiptObject(data[i].id, data[i].time, data[i].merchant, data[i].amount, data[i].tags));
+        for (var i = 0; i < data.length; i++){
+            self.receiptsArr.push(new createReceiptObject(data[i].id, data[i].created, data[i].merchantName, data[i].value, data[i].tags));
         }
         console.log("receipts loaded");
     });
